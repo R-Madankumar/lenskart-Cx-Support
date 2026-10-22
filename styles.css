@@ -1,0 +1,113 @@
+/* Lenskart Executive Dashboard Custom Styling */
+:root {
+  --lk-navy: #000042;
+  --lk-navy-dark: #00002b;
+  --lk-teal: #00bac6;
+  --lk-teal-hover: #009aa4;
+  --lk-teal-light: #e6fafb;
+  --lk-amber: #f59e0b;
+  --lk-coral: #ef4444;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: #f8fafc;
+  color: #1e293b;
+  min-height: 100vh;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Glow effects for urgent items */
+.urgent-glow {
+  box-shadow: 0 0 15px rgba(239, 68, 68, 0.25);
+  border-left: 4px solid #ef4444 !important;
+}
+
+.due-today-glow {
+  box-shadow: 0 0 15px rgba(0, 186, 198, 0.25);
+  border-left: 4px solid #00bac6 !important;
+}
+
+/* Timeline Stepper styling */
+.timeline-step {
+  position: relative;
+}
+.timeline-step:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: 14px;
+  left: 28px;
+  width: calc(100% - 28px);
+  height: 2px;
+  background-color: #e2e8f0;
+  z-index: 1;
+}
+.timeline-step.completed:not(:last-child)::after {
+  background-color: #10b981;
+}
+.timeline-step.active:not(:last-child)::after {
+  background-color: #00bac6;
+}
+
+/* Smooth modal backdrop transition */
+.modal-backdrop {
+  backdrop-filter: blur(4px);
+  background-color: rgba(15, 23, 42, 0.65);
+}
+
+/* Custom badge transitions */
+.badge-transition {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Card hover animation */
+.customer-card {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.customer-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px -4px rgba(0, 0, 66, 0.08);
+}
+
+/* Pulsing badge animation for urgent and due items */
+@keyframes pulse-subtle {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+.animate-pulse-subtle {
+  animation: pulse-subtle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Print Styles */
+@media print {
+  header, #customerFormCard, #filterBar, .no-print {
+    display: none !important;
+  }
+  body {
+    background: white;
+  }
+  .customer-card {
+    break-inside: avoid;
+    box-shadow: none !important;
+    border: 1px solid #e2e8f0 !important;
+  }
+}

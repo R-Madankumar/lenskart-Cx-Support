@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Lenskart Executive CX Dashboard</title>
+  <!-- Mobile & PWA Optimization Tags -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Lenskart CX">
+  <meta name="theme-color" content="#000042">
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            lenskart: {
+              navy: '#000042',
+              dark: '#00002b',
+              teal: '#00bac6',
+              tealDark: '#009ea8',
+              tealLight: '#e6fafb',
+              accent: '#f3a847'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col">
+
+  <!-- TOP HEADER -->
+  <header class="bg-[#000042] text-white border-b border-slate-800 shadow-md sticky top-0 z-30">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4">
+      <!-- Brand & Title -->
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-[#00bac6] flex items-center justify-center text-[#000042] font-black shadow-lg text-lg">
+          👓
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-lg font-bold tracking-tight text-white flex items-center gap-2">
+              Lenskart Executive Dashboard
+            </h1>
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#00bac6]/20 text-[#00bac6] border border-[#00bac6]/40 uppercase tracking-wider">
+              CX Operations
+            </span>
+          </div>
+          <p class="text-xs text-slate-300">Automated Post-Purchase Timeline & NPS Engagement Engine</p>
+        </div>
+      </div>
+
+      <!-- Header Actions: Clock, Due Alert, Utility Buttons -->
+      <div class="flex items-center gap-3">
+        <!-- Live Clock -->
+        <div class="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs font-mono text-slate-200">
+          <span>🕒</span>
+          <span id="liveClock">Loading...</span>
+        </div>
+
+        <!-- Today's Alert Pill -->
+        <div id="headerTodayAlert" class="hidden flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500/20 border border-amber-400/40 text-amber-300 text-xs font-semibold animate-pulse-subtle">
+          <span>🔥</span>
+          <span><strong id="headerTodayCount">0</strong> Actions Due Today</span>
+        </div>
+
+        <!-- Settings Button -->
+        <button onclick="openSettingsModal()" title="Customize Store Info & WhatsApp Templates" class="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 border border-white/15 text-xs font-medium text-white transition flex items-center gap-1.5">
+          <span>⚙️</span>
+          <span class="hidden sm:inline">Settings & Templates</span>
+        </button>
+
+        <!-- Backup & CSV Export Dropdown / Buttons -->
+        <div class="flex items-center gap-1.5">
+          <button onclick="exportToCsv()" title="Export all customer records to CSV" class="px-3 py-1.5 rounded-lg bg-[#00bac6] hover:bg-[#009ea8] text-[#000042] font-bold text-xs shadow-md transition flex items-center gap-1">
+            <span>📥</span>
+            <span>Export CSV</span>
+          </button>
+          
+          <button onclick="loadDemoData(true)" title="Load sample Lenskart orders" class="px-2.5 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 border border-white/15 text-xs text-slate-200 transition" title="Reset with realistic demo data">
+            <span>🔄 Demo</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full space-y-6">
+
+    <!-- KPI STATS OVERVIEW CARDS (Phase 2) -->
+    <section class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <!-- Stat 1: Total Active -->
+      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+        <div>
+          <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Active Orders</p>
+          <p id="statActiveOrders" class="text-2xl font-black text-slate-900 mt-1">0</p>
+          <p class="text-[11px] text-slate-400 mt-0.5">Under CX monitoring</p>
+        </div>
+        <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl font-bold">
+          📋
+        </div>
+      </div>
+
+      <!-- Stat 2: Today's Due Actions -->
+      <div class="bg-white p-4 rounded-xl border border-amber-200 shadow-sm flex items-center justify-between bg-gradient-to-br from-white to-amber-50/30">
+        <div>
+          <p class="text-xs font-bold text-amber-700 uppercase tracking-wider">Due Today / Overdue</p>
+          <p id="statTodayActions" class="text-2xl font-black text-amber-600 mt-1">0</p>
+          <p class="text-[11px] text-amber-600/80 mt-0.5">Needs WhatsApp reach-out</p>
+        </div>
+        <div class="w-12 h-12 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center text-xl font-bold">
+          🔥
+        </div>
+      </div>
+
+      <!-- Stat 3: Urgent Deliveries -->
+      <div class="bg-white p-4 rounded-xl border border-red-200 shadow-sm flex items-center justify-between bg-gradient-to-br from-white to-red-50/30">
+        <div>
+          <p class="text-xs font-bold text-red-700 uppercase tracking-wider">Urgent Deliveries</p>
+          <p id="statUrgentOrders" class="text-2xl font-black text-red-600 mt-1">0</p>
+          <p class="text-[11px] text-red-600/80 mt-0.5">High-priority CRM tracking</p>
+        </div>
+        <div class="w-12 h-12 rounded-xl bg-red-100 text-red-700 flex items-center justify-center text-xl font-bold">
+          ⚡
+        </div>
+      </div>
+
+      <!-- Stat 4: NPS Due This Week -->
+      <div class="bg-white p-4 rounded-xl border border-teal-200 shadow-sm flex items-center justify-between bg-gradient-to-br from-white to-teal-50/30">
+        <div>
+          <p class="text-xs font-bold text-teal-800 uppercase tracking-wider">NPS Survey Window</p>
+          <p id="statNpsThisWeek" class="text-2xl font-black text-teal-600 mt-1">0</p>
+          <p class="text-[11px] text-teal-700/80 mt-0.5">Rating window open (7 days)</p>
+        </div>
+        <div class="w-12 h-12 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center text-xl font-bold">
+          ⭐
+        </div>
+      </div>
+    </section>
+
+    <!-- 2-COLUMN WORKSPACE: LEFT = INTAKE FORM, RIGHT = ACTION QUEUE -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+      <!-- LEFT COLUMN: CUSTOMER INTAKE FORM (Phase 1) -->
+      <aside class="lg:col-span-4 sticky top-20">
+        <div id="customerFormCard" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-4">
+          <!-- Form Header -->
+          <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div>
+              <h2 id="formTitle" class="text-base font-bold text-[#000042]">New Customer Intake</h2>
+              <p class="text-xs text-slate-500">Auto-schedules Day 7/14 or Day 15/30 milestones</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button id="cancelEditBtn" class="hidden text-xs text-rose-600 hover:text-rose-800 font-semibold px-2 py-1 rounded bg-rose-50 border border-rose-200">
+                Cancel Edit
+              </button>
+              <button type="button" id="mobileToggleFormBtn" onclick="toggleMobileForm()" class="lg:hidden text-xs bg-teal-50 text-teal-800 font-bold px-3 py-1.5 rounded-lg border border-teal-200 transition">
+                ➕ Add Customer
+              </button>
+            </div>
+          </div>
+
+          <!-- The Intake Form (Collapsible on mobile screens for effortless queue scanning) -->
+          <form id="customerForm" class="hidden lg:block space-y-3.5">
+            <!-- Customer Name -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Customer Full Name *</label>
+              <div class="relative">
+                <input type="text" id="custName" required placeholder="e.g. Rahul Sharma" 
+                  class="w-full text-sm px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00bac6] focus:border-transparent transition">
+              </div>
+            </div>
+
+            <!-- Phone Number & Order ID Row -->
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Phone Number *</label>
+                <div class="flex">
+                  <span class="inline-flex items-center px-2 text-xs font-semibold text-slate-500 bg-slate-100 border border-r-0 border-slate-300 rounded-l-lg">
+                    +91
+                  </span>
+                  <input type="tel" id="custPhone" required placeholder="9876543210" maxlength="13"
+                    class="w-full text-sm px-2.5 py-2 border border-slate-300 rounded-r-lg focus:outline-none focus:ring-2 focus:ring-[#00bac6] focus:border-transparent font-mono transition">
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Order / Bill ID</label>
+                <input type="text" id="custOrderId" placeholder="LK-89210"
+                  class="w-full text-sm px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00bac6] focus:border-transparent font-mono transition">
+              </div>
+            </div>
+
+            <!-- Order Type (Single Vision vs Progressive) -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Order Type & Adaptation Plan *</label>
+              <select id="custOrderType" class="w-full text-sm px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00bac6] focus:border-transparent bg-white font-medium transition">
+                <option value="single">Single Vision (Mid-Way Day 7 | NPS Day 14)</option>
+                <option value="progressive">Progressive Lens (Mid-Way Day 15 | NPS Day 30)</option>
+              </select>
+            </div>
+
+            <!-- Billing Date -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Billing Date *</label>
+              <input type="date" id="custBillingDate" required
+                class="w-full text-sm px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00bac6] focus:border-transparent transition">
+            </div>
+
+            <!-- Urgent Delivery Toggle -->
+            <div class="p-3 bg-red-50/70 rounded-xl border border-red-200 flex items-center justify-between">
+              <div>
+                <label for="custUrgent" class="text-xs font-bold text-red-900 cursor-pointer flex items-center gap-1.5">
+                  <span>⚡ Urgent Delivery Flag</span>
+                </label>
+                <p class="text-[11px] text-red-700">Flag for priority expedited lab tracking</p>
+              </div>
+              <input type="checkbox" id="custUrgent" class="w-4 h-4 text-red-600 rounded border-red-300 focus:ring-red-500 cursor-pointer">
+            </div>
+
+            <!-- Frame / Lens Notes -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Frame & Lens Notes (Optional)</label>
+              <textarea id="custNotes" rows="2" placeholder="e.g. Blue Block 1.6 index, customer needs by Friday"
+                class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00bac6] focus:border-transparent transition"></textarea>
+            </div>
+
+            <!-- Automatic Timeline Preview Box (Phase 1) -->
+            <div class="bg-slate-50 p-3 rounded-xl border border-slate-200/80 space-y-1.5 text-xs">
+              <div class="font-semibold text-slate-700 flex items-center justify-between">
+                <span>🗓️ Calculated Timeline:</span>
+                <span class="text-[10px] text-teal-700 font-bold uppercase tracking-wider">Automated</span>
+              </div>
+              <div class="flex items-center justify-between text-slate-600">
+                <span>Mid-Way Comfort Check:</span>
+                <strong id="previewMidwayDate" class="text-slate-900 font-mono">--</strong>
+              </div>
+              <div class="flex items-center justify-between text-slate-600">
+                <span>NPS Link Drop Notification:</span>
+                <strong id="previewNpsDate" class="text-slate-900 font-mono">--</strong>
+              </div>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="w-full py-2.5 px-4 rounded-xl bg-[#000042] hover:bg-[#00002b] text-white font-bold text-sm shadow-md transition flex items-center justify-center gap-2">
+              <span id="submitBtnText">Add to Tracking Queue</span>
+              <span>➕</span>
+            </button>
+          </form>
+        </div>
+      </aside>
+
+      <!-- RIGHT COLUMN: ACTIONABLE QUEUES, FILTERS & CARDS (Phases 2 & 3) -->
+      <section class="lg:col-span-8 space-y-4">
+        
+        <!-- ACTION QUEUE TABS -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-1.5">
+          <nav class="flex flex-wrap gap-1" aria-label="Tabs">
+            <button data-tab="today" class="tab-btn flex-1 min-w-[120px] py-2 px-3 text-xs font-bold rounded-xl border-b-2 border-teal-600 text-teal-700 bg-teal-50/50 flex items-center justify-center gap-1.5 transition">
+              <span>🔥 Today's Action Queue</span>
+              <span id="badgeTabToday" class="px-1.5 py-0.2 rounded-full text-[10px] bg-amber-500 text-white font-bold">0</span>
+            </button>
+
+            <button data-tab="urgent" class="tab-btn flex-1 min-w-[110px] py-2 px-3 text-xs font-semibold rounded-xl border-b-2 border-transparent text-slate-600 hover:text-slate-900 flex items-center justify-center gap-1.5 transition">
+              <span>⚡ Urgent Deliveries</span>
+              <span id="badgeTabUrgent" class="px-1.5 py-0.2 rounded-full text-[10px] bg-red-100 text-red-700 font-bold">0</span>
+            </button>
+
+            <button data-tab="active" class="tab-btn flex-1 min-w-[100px] py-2 px-3 text-xs font-semibold rounded-xl border-b-2 border-transparent text-slate-600 hover:text-slate-900 flex items-center justify-center gap-1.5 transition">
+              <span>📋 All Active</span>
+              <span id="badgeTabActive" class="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-100 text-slate-700 font-bold">0</span>
+            </button>
+
+            <button data-tab="completed" class="tab-btn flex-1 min-w-[100px] py-2 px-3 text-xs font-semibold rounded-xl border-b-2 border-transparent text-slate-600 hover:text-slate-900 flex items-center justify-center gap-1.5 transition">
+              <span>🎉 Completed</span>
+              <span id="badgeTabCompleted" class="px-1.5 py-0.2 rounded-full text-[10px] bg-emerald-100 text-emerald-700 font-bold">0</span>
+            </button>
+
+            <button data-tab="archived" class="tab-btn flex-1 min-w-[90px] py-2 px-3 text-xs font-semibold rounded-xl border-b-2 border-transparent text-slate-600 hover:text-slate-900 flex items-center justify-center gap-1.5 transition">
+              <span>🗄️ Archived</span>
+              <span id="badgeTabArchived" class="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-100 text-slate-600 font-medium">0</span>
+            </button>
+          </nav>
+        </div>
+
+        <!-- SEARCH & FILTER TOOLBAR (Phase 2) -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 space-y-3">
+          <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
+            <!-- Real-time Search Input -->
+            <div class="sm:col-span-5 relative">
+              <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                🔍
+              </span>
+              <input type="text" id="searchInput" placeholder="Search customer, phone, or order ID..."
+                class="w-full text-xs pl-8 pr-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00bac6] transition">
+            </div>
+
+            <!-- Order Type Filter -->
+            <div class="sm:col-span-3">
+              <select id="filterOrderTypeSelect" class="w-full text-xs px-2.5 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00bac6] bg-white">
+                <option value="all">All Lens Types</option>
+                <option value="single">Single Vision Only</option>
+                <option value="progressive">Progressive Only</option>
+              </select>
+            </div>
+
+            <!-- Status Filter -->
+            <div class="sm:col-span-2">
+              <select id="filterStatusSelect" class="w-full text-xs px-2.5 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00bac6] bg-white">
+                <option value="all">All Status</option>
+                <option value="midway_pending">Midway Pending</option>
+                <option value="nps_pending">NPS Pending</option>
+                <option value="urgent_only">Urgent Only</option>
+                <option value="all_done">Fully Done</option>
+              </select>
+            </div>
+
+            <!-- Sort By -->
+            <div class="sm:col-span-2">
+              <select id="sortSelect" class="w-full text-xs px-2.5 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00bac6] bg-white">
+                <option value="due_date_asc">Sort: Due Date (Earliest)</option>
+                <option value="due_date_desc">Sort: Due Date (Latest)</option>
+                <option value="billing_date_desc">Sort: Billed (Newest)</option>
+                <option value="name_asc">Sort: Customer Name</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Quick Controls Bar -->
+          <div class="flex items-center justify-between text-xs text-slate-500 pt-2 border-t border-slate-100">
+            <span id="listResultsCount">0 customers found</span>
+            <div class="flex items-center gap-3">
+              <button onclick="bulkArchiveCompleted()" class="text-xs text-slate-600 hover:text-slate-900 font-medium transition flex items-center gap-1">
+                <span>🧹 Clean Up Completed</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- CUSTOMER LIST CONTAINER -->
+        <div id="customerListContainer" class="space-y-3">
+          <!-- Populated dynamically by app.js -->
+        </div>
+
+        <!-- EMPTY STATE CONTAINER -->
+        <div id="emptyStateContainer" class="hidden bg-white rounded-2xl border border-slate-200 p-12 text-center shadow-sm">
+          <div class="w-16 h-16 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center text-3xl mx-auto mb-3">
+            🔎
+          </div>
+          <h3 class="text-base font-bold text-slate-800">No Customers Found</h3>
+          <p class="text-xs text-slate-500 max-w-sm mx-auto mt-1 mb-4">
+            There are currently no records matching your active tab or search criteria.
+          </p>
+          <button onclick="loadDemoData(true)" class="px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-semibold text-xs shadow-sm transition">
+            Load Sample Lenskart Orders
+          </button>
+        </div>
+
+      </section>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="mt-auto border-t border-slate-200 bg-white py-4 text-center text-xs text-slate-500">
+    <div class="max-w-7xl mx-auto px-4 flex flex-wrap items-center justify-between gap-2">
+      <p>Lenskart Executive CX Dashboard • Powered by LocalStorage & Direct wa.me WhatsApp Protocol</p>
+      <div class="flex items-center gap-3">
+        <button onclick="exportToJsonBackup()" class="hover:text-slate-800">Export JSON Backup</button>
+        <span>•</span>
+        <label class="hover:text-slate-800 cursor-pointer">
+          Import JSON
+          <input type="file" id="importJsonInput" accept=".json" class="hidden" onchange="handleBackupImport(event)">
+        </label>
+      </div>
+    </div>
+  </footer>
+
+  <!-- WHATSAPP MESSAGE PREVIEW & SEND MODAL (Phase 3) -->
+  <div id="whatsappModal" class="hidden fixed inset-0 z-50 overflow-y-auto modal-backdrop flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div>
+          <h3 id="waModalTitle" class="text-base font-bold text-[#000042]">Send WhatsApp Message</h3>
+          <p class="text-xs text-slate-500">Official wa.me protocol with customized greeting</p>
+        </div>
+        <button onclick="closeWhatsAppModal()" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
+      </div>
+
+      <!-- Recipient Info -->
+      <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 flex items-center justify-between text-xs">
+        <div>
+          <span class="text-slate-500">Recipient:</span>
+          <strong id="waCustomerName" class="text-slate-900 ml-1">Customer</strong>
+        </div>
+        <div class="font-mono font-bold text-teal-700" id="waRecipientPhone">
+          +91
+        </div>
+      </div>
+
+      <!-- Message Textarea -->
+      <div>
+        <label class="block text-xs font-semibold text-slate-700 mb-1">Message Preview (Editable):</label>
+        <textarea id="waMessageText" rows="6" class="w-full text-xs font-sans p-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00bac6] transition leading-relaxed"></textarea>
+      </div>
+
+      <!-- Auto-mark Checkbox -->
+      <div class="flex items-center gap-2">
+        <input type="checkbox" id="waAutoMarkCheck" checked class="w-4 h-4 text-teal-600 rounded border-gray-300 focus:ring-teal-500 cursor-pointer">
+        <label for="waAutoMarkCheck" class="text-xs text-slate-700 font-medium cursor-pointer">
+          Automatically mark this milestone as Done / Sent upon launching WhatsApp
+        </label>
+      </div>
+
+      <!-- Modal Actions -->
+      <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+        <button onclick="copyWhatsAppText()" class="px-3 py-2 text-xs font-semibold rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
+          📋 Copy Text
+        </button>
+        <button onclick="closeWhatsAppModal()" class="px-3 py-2 text-xs font-semibold rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
+          Cancel
+        </button>
+        <button onclick="sendWhatsAppNow()" class="px-4 py-2 text-xs font-bold rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white shadow-md transition flex items-center gap-1.5">
+          <span>💬 Open WhatsApp Web / App</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETTINGS & TEMPLATES CUSTOMIZER MODAL -->
+  <div id="settingsModal" class="hidden fixed inset-0 z-50 overflow-y-auto modal-backdrop flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-slate-100 space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div>
+          <h3 class="text-base font-bold text-[#000042]">Settings & Message Templates</h3>
+          <p class="text-xs text-slate-500">Configure your store information and WhatsApp wording</p>
+        </div>
+        <button onclick="closeSettingsModal()" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
+      </div>
+
+      <!-- Store & Executive Details -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div class="sm:col-span-2">
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Store Name / Branch</label>
+          <input type="text" id="settingStoreName" placeholder="Lenskart Store (Indiranagar)"
+            class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00bac6]">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Default Country Code</label>
+          <input type="text" id="settingCountryCode" placeholder="91"
+            class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00bac6]">
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold text-slate-700 mb-1">Executive Name (Sign-off)</label>
+        <input type="text" id="settingExecutiveName" placeholder="Aditya (Store CX)"
+          class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00bac6]">
+      </div>
+
+      <!-- Templates Customization -->
+      <div class="space-y-3 pt-2">
+        <h4 class="text-xs font-bold text-slate-900 uppercase tracking-wider border-b border-slate-100 pb-1">
+          WhatsApp Templates
+        </h4>
+        <p class="text-[11px] text-slate-500">Available variables: <code>{name}</code>, <code>{orderId}</code>, <code>{store}</code>, <code>{executive}</code>, <code>{orderType}</code></p>
+
+        <!-- Template 1: Urgent -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">⚡ Urgent Order Delivery Follow-Up</label>
+          <textarea id="templateUrgent" rows="2" class="w-full text-xs p-2.5 border border-slate-300 rounded-lg font-sans"></textarea>
+        </div>
+
+        <!-- Template 2: Mid-way Single Vision -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">💬 Single Vision Mid-Way Check-in (Day 7)</label>
+          <textarea id="templateMidwaySingle" rows="2" class="w-full text-xs p-2.5 border border-slate-300 rounded-lg font-sans"></textarea>
+        </div>
+
+        <!-- Template 3: Mid-way Progressive -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">💬 Progressive Adaptation Check-in (Day 15)</label>
+          <textarea id="templateMidwayProg" rows="2" class="w-full text-xs p-2.5 border border-slate-300 rounded-lg font-sans"></textarea>
+        </div>
+
+        <!-- Template 4: NPS Reminder -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">⭐ NPS Rating Reminder (Day 14 or Day 30)</label>
+          <textarea id="templateNps" rows="2" class="w-full text-xs p-2.5 border border-slate-300 rounded-lg font-sans"></textarea>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+        <button onclick="closeSettingsModal()" class="px-3 py-2 text-xs font-semibold rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
+          Cancel
+        </button>
+        <button onclick="saveSettingsModal()" class="px-4 py-2 text-xs font-bold rounded-xl bg-[#000042] hover:bg-[#00002b] text-white shadow-md transition">
+          Save Settings
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div id="toast" class="hidden fixed bottom-5 right-5 z-50 flex items-center gap-3 px-4 py-3 rounded-xl shadow-xl text-white bg-slate-900 transition duration-300">
+    <span id="toastIcon" class="text-sm font-bold">✓</span>
+    <span id="toastMessage" class="text-xs font-medium">Notification text</span>
+  </div>
+
+  <!-- MAIN SCRIPT -->
+  <script src="app.js"></script>
+</body>
+</html>
